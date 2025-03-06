@@ -1,0 +1,651 @@
+openapi: 3.0.0
+info:
+  title: МКС Analytics API
+  description: Метод добавления записи об оформленном продукте для дальнейшего формирования аналитических отчётов
+  version: 1.1.25
+servers:
+  - url: https://localhost:18083/api/v1/analytics
+tags:
+  - name: Analytics
+    description: Метод добавления записи об оформленном продукте для дальнейшего формирования аналитических отчётов
+paths:
+  /selected-products:
+    post:
+      security:
+        - BearerAuth: []
+      summary: Добавить запись об оформленном продукте
+      description: Запрос на добавление записи об оформленном продукте
+      tags:
+        - Analytics
+      operationId: selected-products
+      requestBody:
+        required: true
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              $ref: '#/components/schemas/SelectedProductRequestDto'
+      responses:
+        '201':
+          description: Запись успешно добавлена
+        '400':
+          description: Данные не валидны
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              examples:
+                example1:
+                  summary: Пример ошибки с кодом 4002
+                  value:
+                    code: 4002
+                    message: 'Ошибка запроса,  отсутствуют следующие параметры запроса: amount.'
+                example2:
+                  summary: Пример ошибки с кодом 4004
+                  value:
+                    code: 4004
+                    message: 'Ошибка запроса,  некорректные данные в следующих параметрах:'
+        '403':
+          description: У пользователя нет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              example:
+                code: 4005
+                message: Ошибка запроса, у пользователя нет доступа к данному ресурсу
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              example:
+                code: 4001
+                message: AccessToken не валиден
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              example:
+                code: 500
+                message: Внутреняя ошибка сервера или базы данных
+    get:
+      security:
+        - BearerAuth: []
+      summary: Получить значения по аналитике
+      parameters:
+        - in: query
+          name: period
+          description: Период за который собирается аналитика
+          schema:
+            type: string
+            enum:
+              - "Месяц"
+              - "Квартал"
+              - "Год"
+          required: false
+        - in: query
+          name: startDate
+          description: Начальная дата для произвольного периода
+          schema:
+            type: string
+            format: date
+          example: "01.06.24"
+          required: false
+        - in: query
+          name: endDate
+          description: Конечная дата для произвольного периода
+          schema:
+            type: string
+            format: date
+          example: "29.06.24"
+          required: false
+        - in: query
+          name: city
+          description: Город за который собирается аналитика
+          schema:
+            type: string
+          example: 'Владивосток'
+          required: false
+        - in: query
+          name: currency
+          description: Валюта за который собирается аналитика
+          schema:
+            type: string
+          example: 'RUB'
+          required: true
+      description: Запрос на получение аналитики
+      tags:
+        - Analytics
+      operationId: get-analytics
+      responses:
+        '200':
+          description: Запись успешно добавлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsResponseDto'
+        '400':
+          description: Данные не валидны
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              examples:
+                example1:
+                  summary: Пример ошибки с кодом 4002
+                  value:
+                    code: 4002
+                    message: 'Ошибка запроса,  отсутствуют следующие параметры запроса: amount.'
+                example2:
+                  summary: Пример ошибки с кодом 4004
+                  value:
+                    code: 4004
+                    message: 'Ошибка запроса,  некорректные данные в следующих параметрах:'
+        '404':
+          description: Отчёт не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              example:
+                code: 4003
+                message: Не удалось найти данные для составления аналитического отчёта по указанным параметрам
+        '403':
+          description: У пользователя нет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              example:
+                code: 4005
+                message: Ошибка запроса, у пользователя нет доступа к данному ресурсу
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              example:
+                code: 4001
+                message: AccessToken не валиден
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              example:
+                code: 500
+                message: Внутреняя ошибка сервера или базы данных
+  /dictionaries:
+    get:
+      security:
+        - BearerAuth: []
+      summary: Получить значения справочные значения для ананлитики
+      description: Запрос на получение справочной информации аналитики
+      tags:
+        - Analytics
+      operationId: analytics-dict
+      responses:
+        '200':
+          description: Запись успешно добавлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsParametersDto'
+        '404':
+          description: Справочные значения не найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              example:
+                code: 4007
+                message: Данные о справочниках не найдены
+        '403':
+          description: У пользователя нет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              example:
+                code: 4005
+                message: Ошибка запроса, у пользователя нет доступа к данному ресурсу
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              example:
+                code: 4001
+                message: AccessToken не валиден
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              example:
+                code: 500
+                message: Внутреняя ошибка сервера или базы данных
+  /export-statistics:
+    get:
+      security:
+        - BearerAuth: []
+      summary: Выгрузить отчёт в формате excel
+      parameters:
+        - in: query
+          name: period
+          description: Период за который собирается аналитика
+          schema:
+            type: string
+            enum:
+              - "Месяц"
+              - "Квартал"
+              - "Год"
+          required: false
+        - in: query
+          name: startDate
+          description: Начальная дата для произвольного периода
+          schema:
+            type: string
+            format: date
+          example: "01.06.24"
+          required: false
+        - in: query
+          name: endDate
+          description: Конечная дата для произвольного периода
+          schema:
+            type: string
+            format: date
+          example: "29.06.24"
+          required: false
+        - in: query
+          name: city
+          description: Город за который собирается аналитика
+          schema:
+            type: string
+          example: 'Владивосток'
+          required: false
+        - in: query
+          name: currency
+          description: Валюта за который собирается аналитика
+          schema:
+            type: string
+          example: 'RUB'
+          required: true
+      description: Запрос на выгрузку отчёта
+      tags:
+        - Analytics
+      operationId: get-csv-report
+      responses:
+        '200':
+          description: Статистика получена и сохранена на файл
+          content:
+            text/csv:
+              schema:
+                type: string
+              example: |-
+                id;createdAt;amount;clientAge;isNewClient;userId;city;region;isSuccessfullySelected;id;name;category;canDeposit;canWithdrawal;capitalizationToSameAccount;percent;capitalizationPeriod;currency;period
+                16;01.05.2024;2;40;TRUE;1;city;region;TRUE;2;product2;category1;TRUE;TRUE;TRUE;20;Ежемесячно;RUB;100
+                5;10.05.2024;1;18;TRUE;1;city;region;TRUE
+                3;01.05.2022;1;18;TRUE;1;city;region;TRUE
+                4;01.03.2024;1;18;TRUE;1;city;region;TRUE
+                17;01.05.2024;2000;20;TRUE;1;vdk;;TRUE
+                18;01.05.2024;4000;20;TRUE;1;vdk;;TRUE;3;product3;category1;TRUE;TRUE;TRUE;20;category1;RUB;100
+
+        '400':
+          description: Данные не валидны
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              examples:
+                example1:
+                  summary: Пример ошибки с кодом 4002
+                  value:
+                    code: 4002
+                    message: 'Ошибка запроса,  отсутствуют следующие параметры запроса: amount.'
+                example2:
+                  summary: Пример ошибки с кодом 4004
+                  value:
+                    code: 4004
+                    message: 'Ошибка запроса,  некорректные данные в следующих параметрах:'
+        '404':
+          description: Отчёт не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              example:
+                code: 4003
+                message: Не удалось найти данные для составления аналитического отчёта по указанным параметрам
+        '403':
+          description: У пользователя нет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              example:
+                code: 4005
+                message: Ошибка запроса, у пользователя нет доступа к данному ресурсу
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              example:
+                code: 4001
+                message: AccessToken не валиден
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+              example:
+                code: 500
+                message: Внутреняя ошибка сервера или базы данных
+components:
+  schemas:
+    AnalyticsParametersDto:
+      type: object
+      properties:
+        cities:
+          type: array
+          items:
+            type: string
+          example:
+            - "Владивосток"
+            - "Екатеринбург"
+            - "Биробиджан"
+            - "Хабаровск"
+        currencies:
+          type: array
+          items:
+            type: string
+          example:
+            - "RUB"
+            - "CNY"
+        periods:
+          type: array
+          items:
+            type: string
+          example:
+            - "Месяц"
+            - "Квартал"
+            - "Год"
+        startDate:
+          type: string
+          description: Первая дата за которую есть подобранные вклады в БД аналитики
+          example: "2017-01-01"
+    ApiErrorResponseDto:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+    SelectedProductRequestDto:
+      type: object
+      required:
+        - login
+        - createdAt
+        - amount
+        - isSuccessfullySelected
+        - financialProduct
+      properties:
+        createdAt:
+          type: string
+          description: Время выбора вклада
+          example: "2017-01-01"
+          format: date
+          pattern: "YYYY-MM-DD"
+        amount:
+          type: number
+          description: Название вклада
+          example: 200000
+        isNewClient:
+          type: boolean
+          description: Вклад подобран новому клиенту
+          example: true
+        isSuccessfullySelected:
+          type: boolean
+          description: Вклад был передан на оформление (успешно подобран)
+          example: true
+        clientBirthDate:
+          type: string
+          description: Дата рождения клиента, формат ГГГГ-ММ-ДД
+          format: date
+          example: '1985-05-15'
+        financialProduct:
+          $ref: '#/components/schemas/FinancialProductDto'
+    FinancialProductDto:
+      type: object
+      required:
+        - id
+        - name
+        - percent
+        - category
+        - period
+        - currency
+        - canDeposit
+        - canWithdrawal
+        - capitalizationToSameAccount
+        - capitalizationPeriod
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 12345
+        name:
+          type: string
+          description: Название вклада
+          example: АТБ. Вклад
+        percent:
+          type: number
+          description: Процент по вкладу в год
+          example: 15.3
+        category:
+          type: string
+          description: Тип клиента, которому доступен вклад
+          example: Клиент
+        period:
+          type: integer
+          description: Период вклада в днях
+          example: 62
+        currency:
+          type: string
+          description: Валюта вклада (Трёхбуквенный ИСО-код валюты)
+          example: RUB
+        canDeposit:
+          type: boolean
+          description: Возможность пополнения с вклада
+          example: true
+        canWithdrawal:
+          type: boolean
+          description: Возможность снятия вклада
+          example: true
+        capitalizationToSameAccount:
+          type: boolean
+          description: Вклад с капитализацией на тот же акаунт
+          example: true
+        capitalizationPeriod:
+          type: string
+          description: Переиодичность выплат по вкладу
+          example: Ежедневно
+    AnalyticsResponseDto:
+      type: object
+      required:
+        - lineChart
+        - barChart
+        - pieChart
+        - products
+        - amountRaised
+        - successfullySelectedDeposits
+        - numSelectedDeposits
+        - percentNewClient
+      properties:
+        lineChart:
+          type: object
+          required:
+            - xAxis
+            - lines
+          properties:
+            xAxis:
+              type: array
+              items:
+                type: string
+                format: date
+              example: ["01.01.2023","02.01.2023","03.01.2023","04.01.2023","05.01.2023","06.01.2023","07.01.2023","08.01.2023","09.01.2023","10.01.2023","11.01.2023","12.01.2023","13.01.2023","14.01.2023","15.01.2023","16.01.2023","17.01.2023","18.01.2023","19.01.2023","20.01.2023","21.01.2023","22.01.2023","23.01.2023","24.01.2023","25.01.2023","26.01.2023","27.01.2023","28.01.2023","29.01.2023","30.01.2023","31.01.2023","01.02.2023","02.02.2023","03.02.2023","04.02.2023","05.02.2023","06.02.2023","07.02.2023","08.02.2023","09.02.2023","10.02.2023","11.02.2023","12.02.2023","13.02.2023","14.02.2023","15.02.2023","16.02.2023","17.02.2023","18.02.2023","19.02.2023","20.02.2023","21.02.2023","22.02.2023","23.02.2023","24.02.2023","25.02.2023","26.02.2023","27.02.2023","28.02.2023","29.02.2023","01.03.2023","02.03.2023","03.03.2023","04.03.2023","05.03.2023","06.03.2023","07.03.2023","08.03.2023","09.03.2023","10.03.2023","11.03.2023","12.03.2023","13.03.2023","14.03.2023","15.03.2023","16.03.2023","17.03.2023","18.03.2023","19.03.2023","20.03.2023","21.03.2023","22.03.2023","23.03.2023","24.03.2023","25.03.2023","26.03.2023","27.03.2023","28.03.2023","29.03.2023","30.03.2023","31.03.2023","01.04.2023","02.04.2023","03.04.2023","04.04.2023","05.04.2023","06.04.2023","07.04.2023","08.04.2023","09.04.2023","10.04.2023","11.04.2023","12.04.2023","13.04.2023","14.04.2023","15.04.2023","16.04.2023","17.04.2023","18.04.2023","19.04.2023","20.04.2023","21.04.2023","22.04.2023","23.04.2023","24.04.2023","25.04.2023","26.04.2023","27.04.2023","28.04.2023","29.04.2023","30.04.2023","01.05.2023","02.05.2023","03.05.2023","04.05.2023","05.05.2023","06.05.2023","07.05.2023","08.05.2023","09.05.2023","10.05.2023","11.05.2023","12.05.2023","13.05.2023","14.05.2023","15.05.2023","16.05.2023","17.05.2023","18.05.2023","19.05.2023","20.05.2023","21.05.2023","22.05.2023","23.05.2023","24.05.2023","25.05.2023","26.05.2023","27.05.2023","28.05.2023","29.05.2023","30.05.2023","31.05.2023","01.06.2023","02.06.2023","03.06.2023","04.06.2023","05.06.2023","06.06.2023","07.06.2023","08.06.2023","09.06.2023","10.06.2023","11.06.2023","12.06.2023","13.06.2023","14.06.2023","15.06.2023","16.06.2023","17.06.2023","18.06.2023","19.06.2023","20.06.2023","21.06.2023","22.06.2023","23.06.2023","24.06.2023","25.06.2023","26.06.2023","27.06.2023","28.06.2023","29.06.2023","30.06.2023","01.07.2023","02.07.2023","03.07.2023","04.07.2023","05.07.2023","06.07.2023","07.07.2023","08.07.2023","09.07.2023","10.07.2023","11.07.2023","12.07.2023","13.07.2023","14.07.2023","15.07.2023","16.07.2023","17.07.2023","18.07.2023","19.07.2023","20.07.2023","21.07.2023","22.07.2023","23.07.2023","24.07.2023","25.07.2023","26.07.2023","27.07.2023","28.07.2023","29.07.2023","30.07.2023","31.07.2023","01.08.2023","02.08.2023","03.08.2023","04.08.2023","05.08.2023","06.08.2023","07.08.2023","08.08.2023","09.08.2023","10.08.2023","11.08.2023","12.08.2023","13.08.2023","14.08.2023","15.08.2023","16.08.2023","17.08.2023","18.08.2023","19.08.2023","20.08.2023","21.08.2023","22.08.2023","23.08.2023","24.08.2023","25.08.2023","26.08.2023","27.08.2023","28.08.2023","29.08.2023","30.08.2023","31.08.2023","01.09.2023","02.09.2023","03.09.2023","04.09.2023","05.09.2023","06.09.2023","07.09.2023","08.09.2023","09.09.2023","10.09.2023","11.09.2023","12.09.2023","13.09.2023","14.09.2023","15.09.2023","16.09.2023","17.09.2023","18.09.2023","19.09.2023","20.09.2023","21.09.2023","22.09.2023","23.09.2023","24.09.2023","25.09.2023","26.09.2023","27.09.2023","28.09.2023","29.09.2023","30.09.2023","01.10.2023","02.10.2023","03.10.2023","04.10.2023","05.10.2023","06.10.2023","07.10.2023","08.10.2023","09.10.2023","10.10.2023","11.10.2023","12.10.2023","13.10.2023","14.10.2023","15.10.2023","16.10.2023","17.10.2023","18.10.2023","19.10.2023","20.10.2023","21.10.2023","22.10.2023","23.10.2023","24.10.2023","25.10.2023","26.10.2023","27.10.2023","28.10.2023","29.10.2023","30.10.2023","31.10.2023","01.11.2023","02.11.2023","03.11.2023","04.11.2023","05.11.2023","06.11.2023","07.11.2023","08.11.2023","09.11.2023","10.11.2023","11.11.2023","12.11.2023","13.11.2023","14.11.2023","15.11.2023","16.11.2023","17.11.2023","18.11.2023","19.11.2023","20.11.2023","21.11.2023","22.11.2023","23.11.2023","24.11.2023","25.11.2023","26.11.2023","27.11.2023","28.11.2023","29.11.2023","30.11.2023","01.12.2023","02.12.2023","03.12.2023","04.12.2023","05.12.2023","06.12.2023","07.12.2023","08.12.2023","09.12.2023","10.12.2023","11.12.2023","12.12.2023","13.12.2023","14.12.2023","15.12.2023","16.12.2023","17.12.2023","18.12.2023","19.12.2023","20.12.2023","21.12.2023","22.12.2023","23.12.2023","24.12.2023","25.12.2023","26.12.2023","27.12.2023","28.12.2023","29.12.2023","30.12.2023","31.12.2023","01.01.2024","02.01.2024","03.01.2024","04.01.2024","05.01.2024","06.01.2024","07.01.2024","08.01.2024","09.01.2024","10.01.2024","11.01.2024","12.01.2024","13.01.2024","14.01.2024"]
+            lines:
+              type: array
+              items:
+                $ref: '#/components/schemas/ChartDto'
+              example:
+                - label: "Объём привлеченных средств, 100тыс руб."
+                  values: [80,72,107,115,112,115,93,116,76,84,83,80,100,98,63,100,75,114,93,90,96,86,70,106,62,73,102,93,101,98,116,75,64,116,70,66,97,96,81,81,104,66,62,114,81,86,63,95,99,86,84,108,81,96,117,111,109,109,62,109,98,99,69,69,109,101,73,112,117,109,95,81,72,62,88,79,64,109,69,100,104,104,96,74,78,107,117,81,110,75,65,82,79,91,111,95,78,97,85,102,99,106,102,111,113,87,118,71,96,103,103,65,79,90,116,80,84,117,113,97,69,84,66,101,62,96,109,76,89,73,91,75,69,69,73,100,84,96,91,64,89,64,96,94,98,95,109,67,102,97,111,101,117,66,84,90,101,110,104,96,98,104,81,93,105,71,83,71,84,75,86,99,65,73,108,104,105,94,95,94,99,75,104,93,74,96,101,65,116,105,117,118,90,95,117,81,62,69,99,83,70,80,95,63,71,99,81,70,118,109,77,116,103,110,104,96,81,87,69,111,67,82,99,73,83,90,118,64,72,102,71,64,95,104,92,108,118,94,86,66,94,100,83,87,63,97,100,97,118,87,71,94,78,83,68,65,92,118,80,84,93,110,86,89,100,116,88,96,96,95,92,93,111,95,113,84,76,109,91,86,99,78,74,114,84,111,64,78,84,106,100,100,71,117,113,97,81,67,113,64,103,103,85,106,110,77,84,116,83,69,100,106,71,69,81,71,70,89,88,108,71,74,116,74,68,106,95,101,116,88,78,106,106,74,111,62,68,115,97,65,62,99,62,95,78,86,81,85,63,69,74,68,98,104,110,80,108,88,64,108,89,90,67,116,87,94,110,87,112,103,97,85,63,94,72,83,89,112,75,116]
+                - label: "Кол-во подобранных вкладов"
+                  values: [100,84,65,95,100,56,80,58,87,60,88,86,94,90,74,84,62,80,96,82,84,87,66,93,103,65,91,64,93,77,66,63,103,90,62,101,62,79,106,60,95,89,80,64,73,69,85,75,73,73,71,104,74,87,103,111,76,105,90,94,97,96,78,96,88,74,107,95,75,100,102,91,103,97,69,60,70,78,111,108,75,66,64,65,83,88,71,68,100,88,65,111,102,76,64,99,82,83,98,102,98,61,103,96,111,67,103,100,76,62,96,94,81,60,76,92,94,61,58,91,93,70,104,73,82,81,81,75,102,74,67,76,87,106,68,72,101,93,63,71,100,88,80,84,62,64,85,68,68,55,79,93,100,78,68,58,86,93,68,66,80,99,107,95,80,85,64,65,63,89,92,102,62,95,82,81,73,68,77,61,66,71,67,99,63,84,110,75,107,61,90,79,97,106,85,59,71,94,108,64,66,70,103,87,104,84,75,63,96,100,78,109,58,88,84,59,70,80,107,96,93,58,82,98,61,82,91,105,103,81,83,82,94,75,90,59,69,92,65,76,89,108,85,61,88,72,95,95,70,108,93,82,88,69,57,57,70,58,80,87,107,96,104,83,68,59,66,78,86,84,77,108,96,62,63,99,104,98,74,58,96,75,67,92,66,93,74,88,80,102,81,109,104,105,65,71,86,107,79,84,69,114,102,114,85,95,97,114,104,91,99,75,77,88,104,101,110,104,91,102,62,109,102,68,78,83,75,99,105,106,104,70,98,108,100,105,89,78,101,107,67,105,114,94,101,93,102,83,97,70,93,69,75,101,72,108,71,88,111,96,109,63,71,80,88,73,109,82,95,74,76,73,96,112,102,80,63,65,71,83]
+                - label: "Кол-во клиентов"
+                  values: [99,83,64,94,99,55,79,57,86,59,87,85,93,89,73,83,61,79,95,81,83,86,65,92,102,64,90,63,92,76,65,62,102,89,61,100,61,78,105,59,94,88,79,63,72,68,84,74,72,72,70,103,71,84,100,108,73,102,87,91,94,93,75,93,85,71,104,92,72,97,99,88,100,94,66,57,67,75,108,105,72,63,61,62,80,85,68,65,97,85,62,108,99,73,61,96,79,80,95,99,95,58,100,93,108,64,100,97,73,59,93,94,81,60,76,92,94,61,58,91,93,70,104,73,82,81,81,75,102,74,67,76,87,106,68,72,101,93,63,71,100,88,80,84,62,64,85,68,68,55,79,91,98,76,66,56,84,91,66,64,78,97,105,93,78,83,62,63,61,87,90,100,60,93,80,79,71,66,75,59,64,69,65,97,61,82,108,73,105,59,88,77,95,104,83,57,69,92,106,62,64,68,101,85,102,82,73,61,94,98,76,107,56,86,82,57,68,78,105,94,91,56,80,96,59,80,89,103,101,79,81,80,92,73,88,57,67,90,63,74,87,106,83,59,86,70,93,93,68,106,91,80,86,67,55,55,68,56,78,85,105,94,102,81,66,57,64,76,84,82,75,106,94,60,61,97,102,96,72,56,94,73,65,90,64,91,72,86,78,100,79,107,102,103,63,69,84,105,77,82,67,108,96,108,79,89,91,108,98,85,93,69,71,82,98,95,104,98,85,96,56,103,96,62,72,77,69,93,99,100,98,64,92,102,94,99,83,72,95,101,61,99,108,88,95,87,96,77,91,64,87,63,69,95,66,102,65,82,105,90,103,57,65,74,82,67,103,76,89,68,70,67,90,106,96,74,57,59,65,77]
+        barChart:
+          type: object
+          required:
+            - xAxis
+            - bars
+          properties:
+            xAxis:
+              type: array
+              items:
+                type: string
+              example:
+                - "АТБ.ВИП. ВКЛАД (без пополнения и снятия)"
+                - "АТБ. СЧЕТ"
+                - "АТБ. ВКЛАД (с пополнением)"
+                - "АТБ. ВКЛАД ОНЛАЙН (без пополнения и снятия)"
+                - "«НОМИНАЛЬНЫЙ СЧЕТ»"
+                - "«В ПЛЮСЕ»"
+            bars:
+              type: array
+              items:
+                $ref: '#/components/schemas/ChartDto'
+              example:
+                - label: "Молодёжь (18-35)"
+                  values: [15, 63, 72, 15, 63, 72]
+                - label: "Взрослые (35-60)"
+                  values: [8, 45, 96,8, 45, 96]
+                - label: "Пожилые (60+)"
+                  values: [22, 36, 87,22, 36, 87]
+        pieChart:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChartDto'
+          example:
+            - label: "Молодёжь (18-35)"
+              values: 45
+            - label: "Взрослые (35-60)"
+              values: 25
+            - label: "Пожилые (60+)"
+              values: 30
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductDto'
+          example:
+            - name: "АТБ.ВИП. ВКЛАД (без пополнения и снятия)"
+              avgAmount: 1234000
+              avgPeriod: 24
+            - name: "АТБ. СЧЕТ"
+              avgAmount: 1134000
+              avgPeriod: 9
+            - name: "АТБ. ВКЛАД (с пополнением)"
+              avgAmount: 1034000
+              avgPeriod: 36
+            - name: "АТБ. ВКЛАД ОНЛАЙН (без пополнения и снятия)"
+              avgAmount: 934000
+              avgPeriod: 6
+            - name: "«НОМИНАЛЬНЫЙ СЧЕТ»"
+              avgAmount: 834000
+              avgPeriod: 3
+            - name: "«В ПЛЮСЕ»"
+              avgAmount: 734000
+              avgPeriod: 1
+        statistics:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatisticsDto'
+          example:
+            - name: "Объем привлеченных средств"
+              value: 1234000000
+              growthValue: 8.6
+              mark: "₽"
+              nameOfPeriod: "по сравнению с прошлым годом"
+            - name: "Успешно подобранные вклады"
+              value: 75.6
+              growthValue: 5.2
+              mark: "%"
+              nameOfPeriod: "по сравнению с прошлым годом"
+            - name: "Кол-во подобранных вкладов"
+              value: 10353
+              growthValue: 8.5
+              mark: ""
+              nameOfPeriod: "по сравнению с прошлым годом"
+            - name: "Процент новых клиентов"
+              value: 10
+              growthValue: -7
+              mark: "%"
+              nameOfPeriod: "по сравнению с прошлым годом"
+    ProductDto:
+      type: object
+      required:
+        - name
+        - avgAmount
+        - avgPeriod
+      properties:
+        name:
+          type: string
+        avgAmount:
+          type: number
+        avgPeriod:
+          type: number
+    ChartDto:
+      type: object
+      required:
+        - label
+        - values
+      properties:
+        label:
+          type: string
+        values:
+          type: array
+          items:
+            type: number
+    StatisticsDto:
+      type: object
+      required:
+        - name
+        - value
+        - mark
+        - nameOfPeriod
+      properties:
+        name:
+          type: string
+        value:
+          type: number
+        growthValue:
+          type: number
+        mark:
+          type: string
+        nameOfPeriod:
+          type: string
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

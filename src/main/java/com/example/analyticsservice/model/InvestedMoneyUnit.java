@@ -1,5 +1,6 @@
 package com.example.analyticsservice.model;
 
+import com.example.analyticsservice.exception.BadRequestConfigurationException;
 import lombok.*;
 
 @Getter
