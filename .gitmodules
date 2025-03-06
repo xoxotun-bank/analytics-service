@@ -1,0 +1,3 @@
+[submodule "jwt-starter"]
+	path = jwt-starter
+	url = https://github.com/xoxotun-bank/jwt-starter.git
